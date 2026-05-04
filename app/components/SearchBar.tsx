@@ -100,6 +100,40 @@ export default function SearchBar({ onSearch, onWeatherFound }: SearchBarProps) 
     }
   }, []);
 
+  // Clear cache every hour (weather remains constant for ~1 hour)
+  useEffect(() => {
+    const clearCacheInterval = setInterval(() => {
+      console.log('Clearing weather cache...');
+      
+      // Get current recent searches
+      const stored = localStorage.getItem('recentSearches');
+      if (stored) {
+        try {
+          const searches = JSON.parse(stored) as string[];
+          
+          // Delete each location's cached API response
+          searches.forEach((location) => {
+            localStorage.removeItem(location);
+            console.log(`Deleted cache for: ${location}`);
+          });
+          
+          // Clear the recent searches list
+          localStorage.removeItem('recentSearches');
+          setRecentSearches([]);
+          
+          console.log('All weather cache cleared!');
+        } catch (err) {
+          console.error('Error clearing cache:', err);
+        }
+      }
+    }, 3600000); // 1 hour = 3600000 ms
+
+    // Cleanup interval on component unmount
+    return () => {
+      clearInterval(clearCacheInterval);
+    };
+  }, []);
+
   // Validation function
   const validateInput = (value: string): { isValid: boolean; errorMessage?: string } => {
     // Check if input is empty or only whitespace
@@ -200,6 +234,29 @@ export default function SearchBar({ onSearch, onWeatherFound }: SearchBarProps) 
     setError(null);
 
     try {
+      // Check if location is in recent searches
+      if (recentSearches.includes(locationName)) {
+        console.log('Found in recent searches, loading from localStorage:', locationName);
+        
+        // Get cached data from localStorage
+        const cachedData = localStorage.getItem(locationName);
+        if (cachedData) {
+          const { weather, forecast } = JSON.parse(cachedData);
+          setWeatherData(weather);
+          setForecastData(forecast);
+          console.log('Loaded from cache:', { weather, forecast });
+          
+          // Call the callback to notify parent
+          if (onWeatherFound) {
+            onWeatherFound(weather, forecast);
+          }
+          
+          setLoading(false);
+          return;
+        }
+      }
+
+      // Not in recent searches, make API request
       const apiKey = process.env.NEXT_PUBLIC_WEATHER_API_KEY;
       console.log('API Key:', apiKey);
       console.log('Searching for location:', locationName);
