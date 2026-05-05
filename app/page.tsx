@@ -85,6 +85,7 @@ export default function Home() {
   const [searchInput, setSearchInput] = useState('');
   const [searchLoading, setSearchLoading] = useState(false);
   const [recentSearches, setRecentSearches] = useState<string[]>([]);
+  const [showSearchDropdown, setShowSearchDropdown] = useState(false);
 
   useEffect(() => {
     navigator.geolocation.getCurrentPosition(async (position) => {
@@ -321,16 +322,19 @@ export default function Home() {
           </div>
         </div>
 
-        {/* Search Bar */}
-        <div style={{ flex: 0.3 }}>
+        {/* Search Bar with Dropdown */}
+        <div style={{ flex: 0.3, position: 'relative' }}>
           <input
             type="text"
             placeholder="Search city..."
             value={searchInput}
             onChange={(e) => setSearchInput(e.target.value)}
+            onFocus={() => setShowSearchDropdown(true)}
+            onBlur={() => setTimeout(() => setShowSearchDropdown(false), 200)}
             onKeyPress={(e) => {
               if (e.key === 'Enter') {
                 handleSearch(searchInput);
+                setShowSearchDropdown(false);
               }
             }}
             disabled={searchLoading}
@@ -346,6 +350,57 @@ export default function Home() {
               cursor: searchLoading ? 'not-allowed' : 'text',
             }}
           />
+          
+          {/* Recent Searches Dropdown */}
+          {showSearchDropdown && recentSearches.length > 0 && (
+            <div style={{
+              position: 'absolute',
+              top: '100%',
+              left: 0,
+              right: 0,
+              backgroundColor: '#1a2540',
+              border: '1px solid #2d3748',
+              borderRadius: '12px',
+              marginTop: '8px',
+              zIndex: 1000,
+              boxShadow: '0 4px 12px rgba(0, 0, 0, 0.3)',
+            }}>
+              <div style={{ padding: '8px 0' }}>
+                {recentSearches.map((location, index) => (
+                  <button
+                    key={index}
+                    onClick={() => {
+                      handleSearch(location);
+                      setShowSearchDropdown(false);
+                    }}
+                    style={{
+                      width: '100%',
+                      padding: '10px 16px',
+                      backgroundColor: 'transparent',
+                      border: 'none',
+                      color: '#a0aec0',
+                      fontSize: '13px',
+                      textAlign: 'left',
+                      cursor: 'pointer',
+                      transition: 'all 0.2s ease',
+                      borderBottom: index < recentSearches.length - 1 ? '1px solid #2d3748' : 'none',
+                    }}
+                    onMouseOver={(e) => {
+                      (e.currentTarget as HTMLButtonElement).style.backgroundColor = '#263149';
+                      (e.currentTarget as HTMLButtonElement).style.color = '#ffffff';
+                    }}
+                    onMouseOut={(e) => {
+                      (e.currentTarget as HTMLButtonElement).style.backgroundColor = 'transparent';
+                      (e.currentTarget as HTMLButtonElement).style.color = '#a0aec0';
+                    }}
+                  >
+                    <span style={{ marginRight: '8px' }}>🕐</span>
+                    {location}
+                  </button>
+                ))}
+              </div>
+            </div>
+          )}
         </div>
 
         {/* Right Icons */}
