@@ -593,46 +593,122 @@ export default function Home() {
           {/* Chance of Rain Chart */}
           {displayedForecast && (
             <div style={{ marginTop: '32px', backgroundColor: '#1a2540', borderRadius: '16px', padding: '24px' }}>
-              <div style={{ fontSize: '14px', fontWeight: 'bold', marginBottom: '20px', color: '#ffffff' }}>Hourly precipitation</div>
+              <div style={{ fontSize: '14px', fontWeight: 'bold', marginBottom: '24px', color: '#ffffff' }}>Hourly precipitation</div>
               
-              {/* Bar Chart - Real Data */}
-              <div style={{ display: 'flex', alignItems: 'flex-end', justifyContent: 'space-around', height: '140px', gap: '6px', marginBottom: '16px' }}>
-                {displayedForecast.list.slice(0, 8).map((item, idx) => {
-                  const cloudCover = item.clouds.all;
-                  const isRainy = item.weather.some(w => ['Rain', 'Drizzle', 'Thunderstorm'].includes(w.main));
-                  const rainChance = isRainy ? Math.min(100, cloudCover + 30) : cloudCover;
-                  return (
+              {/* Professional Line Chart */}
+              <div style={{ position: 'relative', height: '200px', marginBottom: '24px' }}>
+                {/* Grid Lines */}
+                <div style={{ position: 'absolute', top: 0, left: 0, right: 0, height: '100%', display: 'flex', flexDirection: 'column', justifyContent: 'space-between', pointerEvents: 'none' }}>
+                  {[0, 1, 2, 3, 4].map((_, idx) => (
                     <div
                       key={idx}
                       style={{
-                        backgroundColor: rainChance > 70 ? '#6ba3ff' : '#4a90e2',
-                        borderRadius: '4px',
-                        flex: 1,
-                        height: `${Math.max(10, rainChance)}%`,
-                        minHeight: '10px',
-                        transition: 'all 0.3s ease',
+                        borderTop: '1px solid rgba(160, 174, 192, 0.1)',
+                        fontSize: '10px',
+                        color: '#718096',
+                        paddingRight: '8px',
+                        textAlign: 'right',
                       }}
-                      title={`${rainChance}% chance`}
-                    />
-                  );
-                })}
-              </div>
-
-              {/* Time Labels */}
-              <div style={{ display: 'grid', gridTemplateColumns: 'repeat(8, 1fr)', gap: '4px', fontSize: '9px', color: '#718096', textAlign: 'center' }}>
-                {displayedForecast.list.slice(0, 8).map((item, idx) => {
-                  const time = new Date(item.dt_txt);
-                  return (
-                    <div key={idx}>
-                      {time.getHours().toString().padStart(2, '0')}:00
+                    >
+                      {(100 - idx * 25)}%
                     </div>
-                  );
-                })}
+                  ))}
+                </div>
+
+                {/* SVG Chart */}
+                <svg
+                  style={{ position: 'absolute', top: 0, left: 0, width: '100%', height: '100%' }}
+                  viewBox="0 0 800 200"
+                  preserveAspectRatio="none"
+                >
+                  <defs>
+                    <linearGradient id="chartGradient" x1="0%" y1="0%" x2="0%" y2="100%">
+                      <stop offset="0%" stopColor="#4a90e2" stopOpacity="0.4" />
+                      <stop offset="100%" stopColor="#4a90e2" stopOpacity="0" />
+                    </linearGradient>
+                  </defs>
+
+                  {/* Area Chart */}
+                  {displayedForecast.list.slice(0, 8).length > 0 && (
+                    <>
+                      {(() => {
+                        const data = displayedForecast.list.slice(0, 8).map((item) => {
+                          const cloudCover = item.clouds.all;
+                          const isRainy = item.weather.some(w => ['Rain', 'Drizzle', 'Thunderstorm'].includes(w.main));
+                          return isRainy ? Math.min(100, cloudCover + 30) : cloudCover;
+                        });
+
+                        const xStep = 800 / (data.length - 1 || 1);
+                        const yScale = 200 / 100;
+
+                        const points = data.map((val, idx) => ({
+                          x: idx * xStep,
+                          y: 200 - val * yScale,
+                        }));
+
+                        const pathData = points
+                          .map((p, idx) => `${idx === 0 ? 'M' : 'L'} ${p.x} ${p.y}`)
+                          .join(' ');
+
+                        const areaPath = `${pathData} L ${points[points.length - 1].x} 200 L 0 200 Z`;
+
+                        return (
+                          <>
+                            {/* Area */}
+                            <path d={areaPath} fill="url(#chartGradient)" />
+
+                            {/* Line */}
+                            <path d={pathData} stroke="#4a90e2" strokeWidth="3" fill="none" strokeLinecap="round" strokeLinejoin="round" />
+
+                            {/* Data Points */}
+                            {points.map((p, idx) => (
+                              <circle
+                                key={idx}
+                                cx={p.x}
+                                cy={p.y}
+                                r="5"
+                                fill="#ffffff"
+                                stroke="#4a90e2"
+                                strokeWidth="2"
+                              />
+                            ))}
+                          </>
+                        );
+                      })()}
+                    </>
+                  )}
+                </svg>
+
+                {/* Time Labels */}
+                <div
+                  style={{
+                    position: 'absolute',
+                    bottom: '-30px',
+                    left: 0,
+                    right: 0,
+                    display: 'flex',
+                    justifyContent: 'space-between',
+                    fontSize: '11px',
+                    color: '#718096',
+                  }}
+                >
+                  {displayedForecast.list.slice(0, 8).map((item, idx) => {
+                    const time = new Date(item.dt_txt);
+                    return (
+                      <div key={idx} style={{ textAlign: 'center' }}>
+                        {time.getHours().toString().padStart(2, '0')}:{time.getMinutes().toString().padStart(2, '0')}
+                      </div>
+                    );
+                  })}
+                </div>
               </div>
 
-              {/* Legend */}
-              <div style={{ marginTop: '16px', display: 'flex', gap: '20px', fontSize: '12px', color: '#a0aec0' }}>
-                <div>💧 Based on cloud cover & weather</div>
+              {/* Value Legend */}
+              <div style={{ marginTop: '40px', display: 'flex', gap: '16px', fontSize: '12px', color: '#a0aec0' }}>
+                <div style={{ display: 'flex', alignItems: 'center', gap: '6px' }}>
+                  <div style={{ width: '12px', height: '12px', backgroundColor: '#4a90e2', borderRadius: '2px' }}></div>
+                  <span>Precipitation chance</span>
+                </div>
               </div>
             </div>
           )}
