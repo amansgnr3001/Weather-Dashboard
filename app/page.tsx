@@ -1,78 +1,10 @@
 'use client';
 
 import { useState, useEffect, useRef } from 'react';
+import { WeatherData, ForecastData, ForecastItem } from './types';
+import SearchBar from './components/SearchBar';
+import CityWeather from './components/CityWeather';
 
-interface WeatherData {
-  coord: {
-    lon: number;
-    lat: number;
-  };
-  weather: Array<{
-    id: number;
-    main: string;
-    description: string;
-    icon: string;
-  }>;
-  main: {
-    temp: number;
-    feels_like: number;
-    temp_min: number;
-    temp_max: number;
-    pressure: number;
-    humidity: number;
-  };
-  visibility: number;
-  wind: {
-    speed: number;
-    deg: number;
-  };
-  clouds: {
-    all: number;
-  };
-  sys: {
-    country: string;
-    sunrise: number;
-    sunset: number;
-  };
-  timezone: number;
-  id: number;
-  name: string;
-  cod: number;
-}
-
-interface ForecastItem {
-  dt: number;
-  main: {
-    temp: number;
-    feels_like: number;
-    temp_min: number;
-    temp_max: number;
-    pressure: number;
-    humidity: number;
-  };
-  weather: Array<{
-    id: number;
-    main: string;
-    description: string;
-    icon: string;
-  }>;
-  wind: {
-    speed: number;
-    deg: number;
-  };
-  clouds: {
-    all: number;
-  };
-  dt_txt: string;
-}
-
-interface ForecastData {
-  list: ForecastItem[];
-  city: {
-    name: string;
-    country: string;
-  };
-}
 
 export default function Home() {
   const [geoWeatherData, setGeoWeatherData] = useState<WeatherData | null>(null);
@@ -84,6 +16,7 @@ export default function Home() {
   const [tempUnit, setTempUnit] = useState(0); // 0 = Celsius, 1 = Fahrenheit
   const [searchInput, setSearchInput] = useState('');
   const [searchLoading, setSearchLoading] = useState(false);
+  const [searchError, setSearchError] = useState<string | null>(null);
   const [recentSearches, setRecentSearches] = useState<string[]>([]);
   const [showSearchDropdown, setShowSearchDropdown] = useState(false);
   const [isDarkTheme, setIsDarkTheme] = useState(true);
@@ -227,10 +160,27 @@ export default function Home() {
     return `https://openweathermap.org/img/wn/${iconCode}@2x.png`;
   };
 
+  const getWeatherEmoji = (iconCode: string): string => {
+    const code = iconCode.substring(0, 2);
+    const isDay = iconCode.endsWith('d');
+    switch (code) {
+      case '01': return isDay ? '☀️' : '🌙';
+      case '02': return isDay ? '🌤️' : '🌤️';
+      case '03': return '⛅';
+      case '04': return '☁️';
+      case '09': return '🌧️';
+      case '10': return isDay ? '🌦️' : '🌧️';
+      case '11': return '⛈️';
+      case '13': return '❄️';
+      case '50': return '🌫️';
+      default: return '🌡️';
+    }
+  };
+
   const getDailyForecast = (forecast: ForecastData | null) => {
     if (!forecast) return [];
 
-    const dailyForecasts: { [key: string]: ForecastItem } = {};
+    const dailyForecasts: Record<string, ForecastItem> = {};
 
     forecast.list.forEach((item) => {
       const date = new Date(item.dt_txt).toLocaleDateString();
@@ -299,35 +249,33 @@ export default function Home() {
 
   const handleSearch = async (city: string) => {
     if (!city.trim()) return;
-    
+
     setSearchLoading(true);
+    setSearchError(null);
     setSearchInput('');
-    
+
     try {
       const trimmedCity = city.trim();
       const apiKey = process.env.NEXT_PUBLIC_WEATHER_API_KEY;
-      
+
       if (!apiKey) {
-        throw new Error('API key not found');
+        throw new Error('API key not configured');
       }
 
-      // Check if location is in recent searches - load from localStorage cache
+      // Check if location is in recent searches — load from localStorage cache
       if (recentSearches.includes(trimmedCity)) {
-        console.log('Found in recent searches, loading from localStorage:', trimmedCity);
-        
         const cachedData = localStorage.getItem(trimmedCity);
         if (cachedData) {
           const { weather, forecast } = JSON.parse(cachedData);
           setDisplayedWeather(weather);
           setDisplayedForecast(forecast);
           setExpandedGeoCard(false);
-          console.log('Loaded from cache');
           setSearchLoading(false);
           return;
         }
       }
 
-      // Not in cache, make API request
+      // Not in cache — make API request
       const weatherRes = await fetch(
         `https://api.openweathermap.org/data/2.5/weather?q=${trimmedCity}&appid=${apiKey}&units=metric`
       );
@@ -336,21 +284,19 @@ export default function Home() {
       );
 
       if (!weatherRes.ok || !forecastRes.ok) {
-        throw new Error('Location not found');
+        throw new Error(`City "${trimmedCity}" not found. Please check the spelling and try again.`);
       }
 
       const weather = await weatherRes.json();
       const forecast = await forecastRes.json();
 
-      // Add to search history and cache
       addToSearchHistory(weather.name, weather, forecast);
-      
       setDisplayedWeather(weather);
       setDisplayedForecast(forecast);
       setExpandedGeoCard(false);
     } catch (err) {
-      console.error('Search error:', err);
-      alert('Could not find weather for that location');
+      const message = err instanceof Error ? err.message : 'Something went wrong. Please try again.';
+      setSearchError(message);
     } finally {
       setSearchLoading(false);
     }
@@ -368,7 +314,7 @@ export default function Home() {
   return (
     <div style={{ backgroundColor: theme.bg, minHeight: '100vh', color: theme.textPrimary, fontFamily: "'Segoe UI', sans-serif" }}>
       {/* Top Navigation Bar */}
-      <div style={{ backgroundColor: theme.bgSecondary, padding: '16px 32px', display: 'flex', alignItems: 'center', justifyContent: 'space-between', borderBottom: `1px solid ${theme.border}` }}>
+      <div className="navbar" style={{ backgroundColor: theme.bgSecondary, borderBottom: `1px solid ${theme.border}` }}>
         <div style={{ display: 'flex', alignItems: 'center', gap: '20px' }}>
           {/* Notification Icon */}
           <button style={{ background: 'none', border: 'none', color: '#ff6b6b', fontSize: '16px', cursor: 'pointer' }}>●</button>
@@ -383,9 +329,9 @@ export default function Home() {
         </div>
 
         {/* Search Bar with Dropdown */}
-        <div 
+        <div
           data-search-container
-          style={{ flex: 0.3, position: 'relative' }}
+          className="search-container"
           onClick={(e) => e.stopPropagation()}
         >
           <input
@@ -394,15 +340,9 @@ export default function Home() {
             placeholder="Search city..."
             value={searchInput}
             onChange={(e) => setSearchInput(e.target.value)}
-            onFocus={() => {
-              console.log('Search input focused');
-              setShowSearchDropdown(true);
-            }}
-            onBlur={() => {
-              console.log('Search input blurred');
-              setTimeout(() => setShowSearchDropdown(false), 150);
-            }}
-            onKeyPress={(e) => {
+            onFocus={() => setShowSearchDropdown(true)}
+            onBlur={() => setTimeout(() => setShowSearchDropdown(false), 150)}
+            onKeyDown={(e) => {
               if (e.key === 'Enter') {
                 handleSearch(searchInput);
                 setSearchInput('');
@@ -576,82 +516,53 @@ export default function Home() {
         </div>
       </div>
 
+      {/* Error Banner */}
+      {searchError && (
+        <div style={{
+          margin: '0 32px',
+          padding: '12px 20px',
+          backgroundColor: '#fee2e2',
+          border: '1px solid #fca5a5',
+          borderRadius: '12px',
+          display: 'flex',
+          alignItems: 'center',
+          justifyContent: 'space-between',
+          gap: '12px',
+          marginTop: '12px',
+        }}>
+          <div style={{ display: 'flex', alignItems: 'center', gap: '10px' }}>
+            <span style={{ fontSize: '18px' }}>⚠️</span>
+            <span style={{ fontSize: '14px', color: '#991b1b', fontWeight: '500' }}>{searchError}</span>
+          </div>
+          <button
+            onClick={() => setSearchError(null)}
+            style={{ background: 'none', border: 'none', cursor: 'pointer', fontSize: '18px', color: '#991b1b', lineHeight: 1 }}
+            aria-label="Dismiss error"
+          >×</button>
+        </div>
+      )}
+
       {/* Main Content Area */}
-      <div style={{ padding: '32px', display: 'flex', gap: '48px' }}>
+      <div className="main-layout">
         {/* Left Side - Main Weather Card */}
-        <div style={{ flex: '0 0 320px' }}>
-          {/* Main Weather Card with Light Background */}
+        <div className="left-col">
+          {/* Main Weather Card — rendered via CityWeather component */}
           {displayedWeather && (expandedGeoCard || displayedWeather.name !== geoWeatherData?.name) && (
-            <div style={{ backgroundColor: theme.cardBgLight, borderRadius: '20px', padding: '24px', marginBottom: '24px', color: theme.textDark }}>
-              {/* Location and Time */}
-              <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '20px' }}>
-                <div>
-                  <div style={{ fontSize: '18px', fontWeight: 'bold', color: theme.textDark }}>
-                    {displayedWeather?.name || 'Location'}
-                  </div>
-                </div>
-                <div style={{ fontSize: '14px', color: theme.textDark }}>
-                  {new Date().toLocaleTimeString('en-US', { hour: '2-digit', minute: '2-digit' })}
-                </div>
-              </div>
-
-              {/* Large Temperature and Icon */}
-              <div style={{ display: 'flex', alignItems: 'flex-start', gap: '12px', marginBottom: '20px' }}>
-                <div style={{ fontSize: '64px', fontWeight: 'bold', lineHeight: '1', color: theme.textDark }}>
-                  {convertTemperature(displayedWeather.main.temp).toFixed(0)}°{getTempUnit()}
-                </div>
-                <img
-                  src={getWeatherIcon(displayedWeather.weather[0].icon)}
-                  alt={displayedWeather.weather[0].description}
-                  style={{ width: '100px', height: '100px' }}
-                />
-              </div>
-
-              {/* Weather Details */}
-              <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '16px', fontSize: '13px' }}>
-                <div>
-                  <div style={{ color: theme.textDark, fontSize: '11px', marginBottom: '4px' }}>Real Feel</div>
-                  <div style={{ fontWeight: 'bold', fontSize: '16px', color: theme.textDark }}>
-                    {convertTemperature(displayedWeather.main.feels_like).toFixed(0)}°{getTempUnit()}
-                  </div>
-                </div>
-                <div>
-                  <div style={{ color: theme.textDark, fontSize: '11px', marginBottom: '4px' }}>Wind</div>
-                  <div style={{ fontWeight: 'bold', fontSize: '16px', color: theme.textDark }}>
-                    {displayedWeather.wind.speed} m/s
-                  </div>
-                </div>
-                <div>
-                  <div style={{ color: theme.textDark, fontSize: '11px', marginBottom: '4px' }}>Pressure</div>
-                  <div style={{ fontWeight: 'bold', fontSize: '16px', color: theme.textDark }}>
-                    {displayedWeather.main.pressure}MB
-                  </div>
-                </div>
-                <div>
-                  <div style={{ color: theme.textDark, fontSize: '11px', marginBottom: '4px' }}>Humidity</div>
-                  <div style={{ fontWeight: 'bold', fontSize: '16px', color: theme.textDark }}>
-                    {displayedWeather.main.humidity}%
-                  </div>
-                </div>
-              </div>
-
-              {/* Sunrise/Sunset */}
-              <div style={{ marginTop: '16px', paddingTop: '16px', borderTop: `1px solid ${theme.textDark}33`, display: 'flex', justifyContent: 'space-around', fontSize: '12px' }}>
-                <div>
-                  <div style={{ color: theme.textDark, marginBottom: '4px' }}>Sunrise</div>
-                  <div style={{ fontWeight: 'bold', color: theme.textDark }}>{formatSunriseSetTime(displayedWeather.sys.sunrise)}</div>
-                </div>
-                <div>
-                  <div style={{ color: theme.textDark, marginBottom: '4px' }}>Sunset</div>
-                  <div style={{ fontWeight: 'bold', color: theme.textDark }}>{formatSunriseSetTime(displayedWeather.sys.sunset)}</div>
-                </div>
-              </div>
-            </div>
+            <CityWeather
+              weatherData={displayedWeather}
+              forecastData={displayedForecast}
+              tempUnit={tempUnit}
+              theme={theme}
+              convertTemperature={convertTemperature}
+              getTempUnit={getTempUnit}
+              getWeatherEmoji={getWeatherEmoji}
+              formatSunriseSetTime={formatSunriseSetTime}
+            />
           )}
         </div>
 
         {/* Right Side - Forecast and Rain Chart */}
-        <div style={{ flex: 1 }}>
+        <div className="right-col">
           {/* Forecast Buttons */}
           <div style={{ display: 'flex', gap: '12px', marginBottom: '20px', justifyContent: 'flex-end' }}>
             <button style={{ backgroundColor: theme.cardBgLight, color: theme.textDark, border: 'none', padding: '8px 20px', borderRadius: '20px', cursor: 'pointer', fontSize: '14px', fontWeight: 'bold' }}>
@@ -659,9 +570,28 @@ export default function Home() {
             </button>
           </div>
 
+          {/* Loading Skeleton */}
+          {searchLoading && (
+            <div>
+              <div className="skeleton" style={{ backgroundColor: theme.cardBg, borderRadius: '12px', height: '110px', marginBottom: '12px' }} />
+              <div className="skeleton" style={{ backgroundColor: theme.cardBg, borderRadius: '16px', height: '280px' }} />
+            </div>
+          )}
+
+          {/* Empty State */}
+          {!displayedForecast && !searchLoading && (
+            <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center', minHeight: '300px', gap: '16px', textAlign: 'center' }}>
+              <span style={{ fontSize: '72px', lineHeight: '1' }}>🌍</span>
+              <div style={{ fontSize: '20px', fontWeight: 'bold', color: theme.textPrimary }}>Search for a city</div>
+              <div style={{ fontSize: '14px', color: theme.textSecondary, maxWidth: '280px', lineHeight: '1.6' }}>
+                Enter a city name in the search bar above to see current weather and a 5-day forecast.
+              </div>
+            </div>
+          )}
+
           {/* 7-Day Forecast Grid (8 columns) */}
-          {displayedForecast && (
-            <div style={{ display: 'grid', gridTemplateColumns: 'repeat(8, 1fr)', gap: '10px' }}>
+          {displayedForecast && !searchLoading && (
+            <div className="forecast-grid">
               {getDailyForecast(displayedForecast).map((day, index) => {
                 const date = new Date(day.dt_txt);
                 const dayName = date.toLocaleDateString('en-US', { weekday: 'short' });
@@ -676,8 +606,11 @@ export default function Home() {
                       border: index === 0 ? `2px solid ${theme.cardBgLight}` : `1px solid ${theme.border}`,
                     }}
                   >
-                    <div style={{ fontSize: '11px', color: theme.textSecondary, marginBottom: '6px', fontWeight: index === 0 ? 'bold' : 'normal' }}>
+                    <div style={{ fontSize: '11px', color: theme.textSecondary, marginBottom: '4px', fontWeight: index === 0 ? 'bold' : 'normal' }}>
                       {dayName}
+                    </div>
+                    <div style={{ fontSize: '22px', lineHeight: '1', marginBottom: '4px' }}>
+                      {getWeatherEmoji(day.weather[0].icon)}
                     </div>
                     <div style={{ fontSize: '14px', fontWeight: 'bold', marginBottom: '4px' }}>
                       {convertTemperature(day.main.temp).toFixed(0)}°{getTempUnit()}
@@ -834,8 +767,11 @@ export default function Home() {
             <div style={{ fontSize: '18px', fontWeight: 'bold', marginBottom: '8px', color: theme.textPrimary }}>
               {geoWeatherData.name}, {geoWeatherData.sys.country}
             </div>
-            <div style={{ fontSize: '32px', fontWeight: 'bold', color: theme.accent, marginBottom: '8px' }}>
-              {convertTemperature(geoWeatherData.main.temp).toFixed(0)}°{getTempUnit()}
+            <div style={{ display: 'flex', alignItems: 'center', gap: '10px', marginBottom: '8px' }}>
+              <span style={{ fontSize: '32px', lineHeight: '1' }}>{getWeatherEmoji(geoWeatherData.weather[0].icon)}</span>
+              <span style={{ fontSize: '32px', fontWeight: 'bold', color: theme.accent }}>
+                {convertTemperature(geoWeatherData.main.temp).toFixed(0)}°{getTempUnit()}
+              </span>
             </div>
             <div style={{ fontSize: '12px', color: theme.textSecondary }}>
               {expandedGeoCard ? 'Click to collapse' : 'Click to expand'}
