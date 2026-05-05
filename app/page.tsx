@@ -245,8 +245,8 @@ export default function Home() {
         )}
       </div>
 
-      {/* Expanded Weather Details Section - Toggles between geolocation and search */}
-      {displayedWeather && (
+      {/* Expanded Weather Details Section - Shows geolocation if expanded, or search results */}
+      {displayedWeather && (expandedGeoCard || displayedWeather.name !== geoWeatherData?.name) && (
         <div style={{ padding: '20px', fontFamily: 'Arial, sans-serif', color: '#000000', marginBottom: '30px' }}>
           {/* Current Weather Display */}
           <div
