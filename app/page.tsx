@@ -334,10 +334,10 @@ export default function Home() {
         <div style={{ display: 'flex', alignItems: 'center', gap: '20px' }}>
           {/* Notification Icon */}
           <button style={{ background: 'none', border: 'none', color: '#ff6b6b', fontSize: '16px', cursor: 'pointer' }}>●</button>
-          {/* Location */}
+          {/* Location - Current Location */}
           <div style={{ display: 'flex', alignItems: 'center', gap: '8px', color: '#ffffff' }}>
             <span>📍</span>
-            <span style={{ fontSize: '14px' }}>{displayedWeather?.name || geoWeatherData?.name || 'Select Location'}</span>
+            <span style={{ fontSize: '14px' }}>{geoWeatherData?.name || 'Select Location'}</span>
           </div>
         </div>
 
@@ -479,11 +479,11 @@ export default function Home() {
           {/* Main Weather Card with Light Background */}
           {displayedWeather && (expandedGeoCard || displayedWeather.name !== geoWeatherData?.name) && (
             <div style={{ backgroundColor: '#a8c9e8', borderRadius: '20px', padding: '24px', marginBottom: '24px', color: '#0a0f1f' }}>
-              {/* Day and Time */}
+              {/* Location and Time */}
               <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '20px' }}>
                 <div>
                   <div style={{ fontSize: '18px', fontWeight: 'bold', color: '#0a0f1f' }}>
-                    {new Date().toLocaleDateString('en-US', { weekday: 'long' })}
+                    {displayedWeather?.name || 'Location'}
                   </div>
                 </div>
                 <div style={{ fontSize: '14px', color: '#0a0f1f' }}>
@@ -494,7 +494,7 @@ export default function Home() {
               {/* Large Temperature and Icon */}
               <div style={{ display: 'flex', alignItems: 'flex-start', gap: '12px', marginBottom: '20px' }}>
                 <div style={{ fontSize: '64px', fontWeight: 'bold', lineHeight: '1', color: '#0a0f1f' }}>
-                  {convertTemperature(displayedWeather.main.temp).toFixed(0)}°
+                  {convertTemperature(displayedWeather.main.temp).toFixed(0)}°{getTempUnit()}
                 </div>
                 <img
                   src={getWeatherIcon(displayedWeather.weather[0].icon)}
@@ -508,7 +508,7 @@ export default function Home() {
                 <div>
                   <div style={{ color: '#0a0f1f', fontSize: '11px', marginBottom: '4px' }}>Real Feel</div>
                   <div style={{ fontWeight: 'bold', fontSize: '16px', color: '#0a0f1f' }}>
-                    {convertTemperature(displayedWeather.main.feels_like).toFixed(0)}°
+                    {convertTemperature(displayedWeather.main.feels_like).toFixed(0)}°{getTempUnit()}
                   </div>
                 </div>
                 <div>
@@ -575,13 +575,8 @@ export default function Home() {
                     <div style={{ fontSize: '11px', color: '#a0aec0', marginBottom: '6px', fontWeight: index === 0 ? 'bold' : 'normal' }}>
                       {dayName}
                     </div>
-                    <img
-                      src={getWeatherIcon(day.weather[0].icon)}
-                      alt={day.weather[0].description}
-                      style={{ width: '40px', height: '40px', margin: '0 auto 6px' }}
-                    />
                     <div style={{ fontSize: '14px', fontWeight: 'bold', marginBottom: '4px' }}>
-                      {convertTemperature(day.main.temp).toFixed(0)}°
+                      {convertTemperature(day.main.temp).toFixed(0)}°{getTempUnit()}
                     </div>
                   </div>
                 );
