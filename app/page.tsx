@@ -1,7 +1,6 @@
 'use client';
 
 import { useState, useEffect } from 'react';
-import SearchBar from './components/SearchBar';
 
 interface WeatherData {
   coord: {
@@ -83,6 +82,8 @@ export default function Home() {
   const [displayedWeather, setDisplayedWeather] = useState<WeatherData | null>(null);
   const [displayedForecast, setDisplayedForecast] = useState<ForecastData | null>(null);
   const [tempUnit, setTempUnit] = useState(0); // 0 = Celsius, 1 = Fahrenheit
+  const [searchInput, setSearchInput] = useState('');
+  const [searchLoading, setSearchLoading] = useState(false);
 
   useEffect(() => {
     navigator.geolocation.getCurrentPosition(async (position) => {
@@ -160,6 +161,42 @@ export default function Home() {
     return tempUnit === 0 ? '°C' : '°F';
   };
 
+  const handleSearch = async (city: string) => {
+    if (!city.trim()) return;
+    
+    setSearchLoading(true);
+    try {
+      const apiKey = process.env.NEXT_PUBLIC_WEATHER_API_KEY;
+      if (!apiKey) {
+        throw new Error('API key not found');
+      }
+
+      const weatherRes = await fetch(
+        `https://api.openweathermap.org/data/2.5/weather?q=${city}&appid=${apiKey}&units=metric`
+      );
+      const forecastRes = await fetch(
+        `https://api.openweathermap.org/data/2.5/forecast?q=${city}&appid=${apiKey}&units=metric`
+      );
+
+      if (!weatherRes.ok || !forecastRes.ok) {
+        throw new Error('Location not found');
+      }
+
+      const weather = await weatherRes.json();
+      const forecast = await forecastRes.json();
+
+      setDisplayedWeather(weather);
+      setDisplayedForecast(forecast);
+      setExpandedGeoCard(false);
+      setSearchInput('');
+    } catch (err) {
+      console.error('Search error:', err);
+      alert('Could not find weather for that location');
+    } finally {
+      setSearchLoading(false);
+    }
+  };
+
   const handleGeoCardClick = () => {
     setExpandedGeoCard(!expandedGeoCard);
     // When geolocation card is clicked, it overwrites the displayed weather
@@ -190,6 +227,14 @@ export default function Home() {
           <input
             type="text"
             placeholder="Search city..."
+            value={searchInput}
+            onChange={(e) => setSearchInput(e.target.value)}
+            onKeyPress={(e) => {
+              if (e.key === 'Enter') {
+                handleSearch(searchInput);
+              }
+            }}
+            disabled={searchLoading}
             style={{
               width: '100%',
               padding: '10px 16px',
@@ -198,6 +243,8 @@ export default function Home() {
               borderRadius: '24px',
               color: '#ffffff',
               fontSize: '14px',
+              opacity: searchLoading ? 0.6 : 1,
+              cursor: searchLoading ? 'not-allowed' : 'text',
             }}
           />
         </div>
