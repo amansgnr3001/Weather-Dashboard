@@ -207,9 +207,9 @@ export default function Home() {
   };
 
   return (
-    <div style={{ backgroundColor: '#1a1f35', minHeight: '100vh', color: '#ffffff', fontFamily: "'Segoe UI', sans-serif" }}>
+    <div style={{ backgroundColor: '#0a0f1f', minHeight: '100vh', color: '#ffffff', fontFamily: "'Segoe UI', sans-serif" }}>
       {/* Top Navigation Bar */}
-      <div style={{ backgroundColor: '#0f1419', padding: '16px 32px', display: 'flex', alignItems: 'center', justifyContent: 'space-between', borderBottom: '1px solid #2d3748' }}>
+      <div style={{ backgroundColor: '#0f1419', padding: '16px 32px', display: 'flex', alignItems: 'center', justifyContent: 'space-between', borderBottom: '1px solid #1a2540' }}>
         <div style={{ display: 'flex', alignItems: 'center', gap: '20px' }}>
           {/* Menu Icon */}
           <button style={{ background: 'none', border: 'none', color: '#ffffff', fontSize: '20px', cursor: 'pointer' }}>☰</button>
@@ -238,10 +238,10 @@ export default function Home() {
             style={{
               width: '100%',
               padding: '10px 16px',
-              backgroundColor: '#2d3748',
+              backgroundColor: '#1a2540',
               border: 'none',
               borderRadius: '20px',
-              color: '#ffffff',
+              color: '#a0aec0',
               fontSize: '14px',
               opacity: searchLoading ? 0.6 : 1,
               cursor: searchLoading ? 'not-allowed' : 'text',
@@ -284,22 +284,22 @@ export default function Home() {
 
           {/* Main Weather Card with Light Background */}
           {displayedWeather && (expandedGeoCard || displayedWeather.name !== geoWeatherData?.name) && (
-            <div style={{ backgroundColor: '#b8d4f1', borderRadius: '20px', padding: '24px', marginBottom: '24px', color: '#1a1f35' }}>
+            <div style={{ backgroundColor: '#a8c9e8', borderRadius: '20px', padding: '24px', marginBottom: '24px', color: '#0a0f1f' }}>
               {/* Day and Time */}
               <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '20px' }}>
                 <div>
-                  <div style={{ fontSize: '18px', fontWeight: 'bold' }}>
+                  <div style={{ fontSize: '18px', fontWeight: 'bold', color: '#0a0f1f' }}>
                     {new Date().toLocaleDateString('en-US', { weekday: 'long' })}
                   </div>
                 </div>
-                <div style={{ fontSize: '14px', color: '#2d3748' }}>
+                <div style={{ fontSize: '14px', color: '#0a0f1f' }}>
                   {new Date().toLocaleTimeString('en-US', { hour: '2-digit', minute: '2-digit' })}
                 </div>
               </div>
 
               {/* Large Temperature and Icon */}
               <div style={{ display: 'flex', alignItems: 'flex-start', gap: '12px', marginBottom: '20px' }}>
-                <div style={{ fontSize: '64px', fontWeight: 'bold', lineHeight: '1' }}>
+                <div style={{ fontSize: '64px', fontWeight: 'bold', lineHeight: '1', color: '#0a0f1f' }}>
                   {convertTemperature(displayedWeather.main.temp).toFixed(0)}°
                 </div>
                 <img
@@ -312,26 +312,26 @@ export default function Home() {
               {/* Weather Details */}
               <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '16px', fontSize: '13px' }}>
                 <div>
-                  <div style={{ color: '#2d3748', fontSize: '11px', marginBottom: '4px' }}>Real Feel</div>
-                  <div style={{ fontWeight: 'bold', fontSize: '16px' }}>
+                  <div style={{ color: '#0a0f1f', fontSize: '11px', marginBottom: '4px' }}>Real Feel</div>
+                  <div style={{ fontWeight: 'bold', fontSize: '16px', color: '#0a0f1f' }}>
                     {convertTemperature(displayedWeather.main.feels_like).toFixed(0)}°
                   </div>
                 </div>
                 <div>
-                  <div style={{ color: '#2d3748', fontSize: '11px', marginBottom: '4px' }}>Wind</div>
-                  <div style={{ fontWeight: 'bold', fontSize: '16px' }}>
+                  <div style={{ color: '#0a0f1f', fontSize: '11px', marginBottom: '4px' }}>Wind</div>
+                  <div style={{ fontWeight: 'bold', fontSize: '16px', color: '#0a0f1f' }}>
                     {displayedWeather.wind.speed} m/s
                   </div>
                 </div>
                 <div>
-                  <div style={{ color: '#2d3748', fontSize: '11px', marginBottom: '4px' }}>Pressure</div>
-                  <div style={{ fontWeight: 'bold', fontSize: '16px' }}>
+                  <div style={{ color: '#0a0f1f', fontSize: '11px', marginBottom: '4px' }}>Pressure</div>
+                  <div style={{ fontWeight: 'bold', fontSize: '16px', color: '#0a0f1f' }}>
                     {displayedWeather.main.pressure}MB
                   </div>
                 </div>
                 <div>
-                  <div style={{ color: '#2d3748', fontSize: '11px', marginBottom: '4px' }}>Humidity</div>
-                  <div style={{ fontWeight: 'bold', fontSize: '16px' }}>
+                  <div style={{ color: '#0a0f1f', fontSize: '11px', marginBottom: '4px' }}>Humidity</div>
+                  <div style={{ fontWeight: 'bold', fontSize: '16px', color: '#0a0f1f' }}>
                     {displayedWeather.main.humidity}%
                   </div>
                 </div>
@@ -340,12 +340,12 @@ export default function Home() {
               {/* Sunrise/Sunset */}
               <div style={{ marginTop: '16px', paddingTop: '16px', borderTop: '1px solid rgba(0,0,0,0.1)', display: 'flex', justifyContent: 'space-around', fontSize: '12px' }}>
                 <div>
-                  <div style={{ color: '#2d3748', marginBottom: '4px' }}>Sunrise</div>
-                  <div style={{ fontWeight: 'bold' }}>8:02 AM</div>
+                  <div style={{ color: '#0a0f1f', marginBottom: '4px' }}>Sunrise</div>
+                  <div style={{ fontWeight: 'bold', color: '#0a0f1f' }}>8:02 AM</div>
                 </div>
                 <div>
-                  <div style={{ color: '#2d3748', marginBottom: '4px' }}>Sunset</div>
-                  <div style={{ fontWeight: 'bold' }}>8:19 PM</div>
+                  <div style={{ color: '#0a0f1f', marginBottom: '4px' }}>Sunset</div>
+                  <div style={{ fontWeight: 'bold', color: '#0a0f1f' }}>8:19 PM</div>
                 </div>
               </div>
             </div>
@@ -356,10 +356,10 @@ export default function Home() {
         <div style={{ flex: 1 }}>
           {/* Forecast Buttons */}
           <div style={{ display: 'flex', gap: '12px', marginBottom: '20px', justifyContent: 'flex-end' }}>
-            <button style={{ backgroundColor: '#b8d4f1', color: '#1a1f35', border: 'none', padding: '8px 20px', borderRadius: '20px', cursor: 'pointer', fontSize: '14px', fontWeight: 'bold' }}>
+            <button style={{ backgroundColor: '#a8c9e8', color: '#0a0f1f', border: 'none', padding: '8px 20px', borderRadius: '20px', cursor: 'pointer', fontSize: '14px', fontWeight: 'bold' }}>
               Forecast
             </button>
-            <button style={{ backgroundColor: 'transparent', color: '#a0aec0', border: '1px solid #4a5568', padding: '8px 20px', borderRadius: '20px', cursor: 'pointer', fontSize: '14px' }}>
+            <button style={{ backgroundColor: 'transparent', color: '#a0aec0', border: '1px solid #1a2540', padding: '8px 20px', borderRadius: '20px', cursor: 'pointer', fontSize: '14px' }}>
               Air quality
             </button>
           </div>
@@ -374,11 +374,11 @@ export default function Home() {
                   <div
                     key={index}
                     style={{
-                      backgroundColor: '#263149',
+                      backgroundColor: '#1a2540',
                       borderRadius: '12px',
                       padding: '12px',
                       textAlign: 'center',
-                      border: index === 0 ? '2px solid #b8d4f1' : 'none',
+                      border: index === 0 ? '2px solid #a8c9e8' : 'none',
                     }}
                   >
                     <div style={{ fontSize: '11px', color: '#a0aec0', marginBottom: '6px', fontWeight: index === 0 ? 'bold' : 'normal' }}>
@@ -399,7 +399,7 @@ export default function Home() {
           )}
 
           {/* Chance of Rain Chart */}
-          <div style={{ marginTop: '32px', backgroundColor: '#263149', borderRadius: '16px', padding: '24px' }}>
+          <div style={{ marginTop: '32px', backgroundColor: '#1a2540', borderRadius: '16px', padding: '24px' }}>
             <div style={{ fontSize: '14px', fontWeight: 'bold', marginBottom: '20px', color: '#ffffff' }}>Chance of rain</div>
             
             {/* Bar Chart */}
@@ -446,11 +446,11 @@ export default function Home() {
           <div
             onClick={handleGeoCardClick}
             style={{
-              backgroundColor: '#263149',
+              backgroundColor: '#1a2540',
               borderRadius: '16px',
               padding: '24px',
               cursor: 'pointer',
-              border: expandedGeoCard ? '2px solid #b8d4f1' : '1px solid #2d3748',
+              border: expandedGeoCard ? '2px solid #a8c9e8' : '1px solid #1a2540',
               transition: 'all 0.3s ease',
               maxWidth: '300px',
             }}
@@ -461,7 +461,7 @@ export default function Home() {
             <div style={{ fontSize: '18px', fontWeight: 'bold', marginBottom: '8px', color: '#ffffff' }}>
               {geoWeatherData.name}, {geoWeatherData.sys.country}
             </div>
-            <div style={{ fontSize: '32px', fontWeight: 'bold', color: '#4a90e2', marginBottom: '8px' }}>
+            <div style={{ fontSize: '32px', fontWeight: 'bold', color: '#a8c9e8', marginBottom: '8px' }}>
               {convertTemperature(geoWeatherData.main.temp).toFixed(0)}°{getTempUnit()}
             </div>
             <div style={{ fontSize: '12px', color: '#718096' }}>
