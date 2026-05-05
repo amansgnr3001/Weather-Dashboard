@@ -1,6 +1,6 @@
 'use client';
 
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useRef } from 'react';
 
 interface WeatherData {
   coord: {
@@ -86,6 +86,7 @@ export default function Home() {
   const [searchLoading, setSearchLoading] = useState(false);
   const [recentSearches, setRecentSearches] = useState<string[]>([]);
   const [showSearchDropdown, setShowSearchDropdown] = useState(false);
+  const searchInputRef = useRef<HTMLInputElement>(null);
 
   useEffect(() => {
     navigator.geolocation.getCurrentPosition(async (position) => {
@@ -348,6 +349,7 @@ export default function Home() {
           onClick={(e) => e.stopPropagation()}
         >
           <input
+            ref={searchInputRef}
             type="text"
             placeholder="Search city..."
             value={searchInput}
@@ -363,7 +365,9 @@ export default function Home() {
             onKeyPress={(e) => {
               if (e.key === 'Enter') {
                 handleSearch(searchInput);
+                setSearchInput('');
                 setShowSearchDropdown(false);
+                searchInputRef.current?.blur();
               }
             }}
             disabled={searchLoading}
@@ -414,7 +418,9 @@ export default function Home() {
                       e.stopPropagation();
                       console.log('Clicked recent search:', location);
                       handleSearch(location);
+                      setSearchInput('');
                       setShowSearchDropdown(false);
+                      searchInputRef.current?.blur();
                     }}
                     onMouseDown={(e) => {
                       e.preventDefault();
