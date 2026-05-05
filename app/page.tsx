@@ -167,6 +167,24 @@ export default function Home() {
     };
   }, []);
 
+  // Close dropdown when clicking outside
+  useEffect(() => {
+    const handleClickOutside = (e: MouseEvent) => {
+      const target = e.target as HTMLElement;
+      if (showSearchDropdown && !target.closest('[data-search-container]')) {
+        setShowSearchDropdown(false);
+      }
+    };
+
+    if (showSearchDropdown) {
+      document.addEventListener('mousedown', handleClickOutside);
+    }
+
+    return () => {
+      document.removeEventListener('mousedown', handleClickOutside);
+    };
+  }, [showSearchDropdown]);
+
   const getWeatherIcon = (iconCode: string) => {
     return `https://openweathermap.org/img/wn/${iconCode}@2x.png`;
   };
@@ -324,15 +342,23 @@ export default function Home() {
 
         {/* Search Bar with Dropdown */}
         <div 
+          data-search-container
           style={{ flex: 0.3, position: 'relative' }}
-          onMouseLeave={() => setShowSearchDropdown(false)}
+          onClick={(e) => e.stopPropagation()}
         >
           <input
             type="text"
             placeholder="Search city..."
             value={searchInput}
             onChange={(e) => setSearchInput(e.target.value)}
-            onFocus={() => setShowSearchDropdown(true)}
+            onFocus={() => {
+              console.log('Search input focused');
+              setShowSearchDropdown(true);
+            }}
+            onBlur={() => {
+              console.log('Search input blurred');
+              setTimeout(() => setShowSearchDropdown(false), 150);
+            }}
             onKeyPress={(e) => {
               if (e.key === 'Enter') {
                 handleSearch(searchInput);
@@ -355,20 +381,26 @@ export default function Home() {
           
           {/* Recent Searches Dropdown */}
           {showSearchDropdown && recentSearches.length > 0 && (
-            <div style={{
-              position: 'absolute',
-              top: '100%',
-              left: 0,
-              right: 0,
-              backgroundColor: '#1a2540',
-              border: '1px solid #2d3748',
-              borderRadius: '12px',
-              marginTop: '8px',
-              zIndex: 1000,
-              boxShadow: '0 4px 12px rgba(0, 0, 0, 0.3)',
-              maxHeight: '300px',
-              overflowY: 'auto',
-            }}>
+            <div 
+              style={{
+                position: 'absolute',
+                top: '100%',
+                left: 0,
+                right: 0,
+                backgroundColor: '#1a2540',
+                border: '1px solid #2d3748',
+                borderRadius: '12px',
+                marginTop: '8px',
+                zIndex: 1000,
+                boxShadow: '0 4px 12px rgba(0, 0, 0, 0.3)',
+                maxHeight: '300px',
+                overflowY: 'auto',
+              }}
+              onMouseDown={(e) => {
+                e.preventDefault();
+                e.stopPropagation();
+              }}
+            >
               <div style={{ padding: '8px 0' }}>
                 <div style={{ padding: '8px 16px', fontSize: '12px', color: '#718096', fontWeight: 'bold' }}>
                   Recent Searches
@@ -376,12 +408,17 @@ export default function Home() {
                 {recentSearches.map((location, index) => (
                   <button
                     key={index}
-                    onClick={() => {
+                    onClick={(e) => {
+                      e.preventDefault();
+                      e.stopPropagation();
                       console.log('Clicked recent search:', location);
                       handleSearch(location);
                       setShowSearchDropdown(false);
                     }}
-                    onMouseDown={(e) => e.preventDefault()}
+                    onMouseDown={(e) => {
+                      e.preventDefault();
+                      e.stopPropagation();
+                    }}
                     style={{
                       width: '100%',
                       padding: '12px 16px',
