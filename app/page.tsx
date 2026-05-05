@@ -208,7 +208,10 @@ export default function Home() {
     const date = new Date(dateString);
     return date.toLocaleDateString('en-US', { weekday: 'short', month: 'short', day: 'numeric' });
   };
-
+  const formatSunriseSetTime = (unixTimestamp: number) => {
+    const date = new Date(unixTimestamp * 1000);
+    return date.toLocaleTimeString('en-US', { hour: '2-digit', minute: '2-digit' });
+  };
   const convertTemperature = (celsius: number): number => {
     if (tempUnit === 1) {
       return (celsius * 9) / 5 + 32;
@@ -532,11 +535,11 @@ export default function Home() {
               <div style={{ marginTop: '16px', paddingTop: '16px', borderTop: '1px solid rgba(0,0,0,0.1)', display: 'flex', justifyContent: 'space-around', fontSize: '12px' }}>
                 <div>
                   <div style={{ color: '#0a0f1f', marginBottom: '4px' }}>Sunrise</div>
-                  <div style={{ fontWeight: 'bold', color: '#0a0f1f' }}>8:02 AM</div>
+                  <div style={{ fontWeight: 'bold', color: '#0a0f1f' }}>{formatSunriseSetTime(displayedWeather.sys.sunrise)}</div>
                 </div>
                 <div>
                   <div style={{ color: '#0a0f1f', marginBottom: '4px' }}>Sunset</div>
-                  <div style={{ fontWeight: 'bold', color: '#0a0f1f' }}>8:19 PM</div>
+                  <div style={{ fontWeight: 'bold', color: '#0a0f1f' }}>{formatSunriseSetTime(displayedWeather.sys.sunset)}</div>
                 </div>
               </div>
             </div>
