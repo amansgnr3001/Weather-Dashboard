@@ -323,14 +323,16 @@ export default function Home() {
         </div>
 
         {/* Search Bar with Dropdown */}
-        <div style={{ flex: 0.3, position: 'relative' }}>
+        <div 
+          style={{ flex: 0.3, position: 'relative' }}
+          onMouseLeave={() => setShowSearchDropdown(false)}
+        >
           <input
             type="text"
             placeholder="Search city..."
             value={searchInput}
             onChange={(e) => setSearchInput(e.target.value)}
             onFocus={() => setShowSearchDropdown(true)}
-            onBlur={() => setTimeout(() => setShowSearchDropdown(false), 200)}
             onKeyPress={(e) => {
               if (e.key === 'Enter') {
                 handleSearch(searchInput);
@@ -364,18 +366,25 @@ export default function Home() {
               marginTop: '8px',
               zIndex: 1000,
               boxShadow: '0 4px 12px rgba(0, 0, 0, 0.3)',
+              maxHeight: '300px',
+              overflowY: 'auto',
             }}>
               <div style={{ padding: '8px 0' }}>
+                <div style={{ padding: '8px 16px', fontSize: '12px', color: '#718096', fontWeight: 'bold' }}>
+                  Recent Searches
+                </div>
                 {recentSearches.map((location, index) => (
                   <button
                     key={index}
                     onClick={() => {
+                      console.log('Clicked recent search:', location);
                       handleSearch(location);
                       setShowSearchDropdown(false);
                     }}
+                    onMouseDown={(e) => e.preventDefault()}
                     style={{
                       width: '100%',
-                      padding: '10px 16px',
+                      padding: '12px 16px',
                       backgroundColor: 'transparent',
                       border: 'none',
                       color: '#a0aec0',
@@ -384,6 +393,9 @@ export default function Home() {
                       cursor: 'pointer',
                       transition: 'all 0.2s ease',
                       borderBottom: index < recentSearches.length - 1 ? '1px solid #2d3748' : 'none',
+                      display: 'flex',
+                      alignItems: 'center',
+                      gap: '8px',
                     }}
                     onMouseOver={(e) => {
                       (e.currentTarget as HTMLButtonElement).style.backgroundColor = '#263149';
@@ -394,8 +406,8 @@ export default function Home() {
                       (e.currentTarget as HTMLButtonElement).style.color = '#a0aec0';
                     }}
                   >
-                    <span style={{ marginRight: '8px' }}>🕐</span>
-                    {location}
+                    <span>🕐</span>
+                    <span>{location}</span>
                   </button>
                 ))}
               </div>
