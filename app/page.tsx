@@ -337,7 +337,10 @@ export default function Home() {
           <button style={{ background: 'none', border: 'none', color: '#ff6b6b', fontSize: '16px', cursor: 'pointer' }}>●</button>
           {/* Location - Current Location */}
           <div style={{ display: 'flex', alignItems: 'center', gap: '8px', color: '#ffffff' }}>
-            <span>📍</span>
+            <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+              <path d="M21 10c0 7-9 13-9 13s-9-6-9-13a9 9 0 0 1 18 0z"></path>
+              <circle cx="12" cy="10" r="3"></circle>
+            </svg>
             <span style={{ fontSize: '14px' }}>{geoWeatherData?.name || 'Select Location'}</span>
           </div>
         </div>
