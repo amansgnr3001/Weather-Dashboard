@@ -329,8 +329,6 @@ export default function Home() {
       {/* Top Navigation Bar */}
       <div style={{ backgroundColor: '#0f1419', padding: '16px 32px', display: 'flex', alignItems: 'center', justifyContent: 'space-between', borderBottom: '1px solid #1a2540' }}>
         <div style={{ display: 'flex', alignItems: 'center', gap: '20px' }}>
-          {/* Menu Icon */}
-          <button style={{ background: 'none', border: 'none', color: '#ffffff', fontSize: '20px', cursor: 'pointer' }}>☰</button>
           {/* Notification Icon */}
           <button style={{ background: 'none', border: 'none', color: '#ff6b6b', fontSize: '16px', cursor: 'pointer' }}>●</button>
           {/* Location */}
@@ -454,16 +452,13 @@ export default function Home() {
 
         {/* Right Icons */}
         <div style={{ display: 'flex', alignItems: 'center', gap: '16px' }}>
-          {/* Settings */}
-          <button style={{ background: 'none', border: 'none', color: '#ffffff', fontSize: '18px', cursor: 'pointer' }}>⚙️</button>
           {/* Theme Toggle */}
           <button
             onClick={() => setTempUnit(tempUnit === 0 ? 1 : 0)}
             style={{
               background: 'none',
               border: 'none',
-              color: '#ffa500',
-              fontSize: '20px',
+              fontSize: '28px',
               cursor: 'pointer',
             }}
           >
@@ -478,13 +473,6 @@ export default function Home() {
       <div style={{ padding: '32px', display: 'flex', gap: '48px' }}>
         {/* Left Side - Main Weather Card */}
         <div style={{ flex: '0 0 320px' }}>
-          {/* Tabs */}
-          <div style={{ display: 'flex', gap: '24px', marginBottom: '24px', paddingBottom: '16px' }}>
-            <button style={{ background: 'none', border: 'none', color: '#a0aec0', fontSize: '16px', cursor: 'pointer' }}>Today</button>
-            <button style={{ background: 'none', border: 'none', color: '#a0aec0', fontSize: '16px', cursor: 'pointer' }}>Tomorrow</button>
-            <button style={{ background: 'none', border: 'none', color: '#ffffff', fontSize: '16px', cursor: 'pointer', fontWeight: 'bold' }}>Next 7 days</button>
-          </div>
-
           {/* Main Weather Card with Light Background */}
           {displayedWeather && (expandedGeoCard || displayedWeather.name !== geoWeatherData?.name) && (
             <div style={{ backgroundColor: '#a8c9e8', borderRadius: '20px', padding: '24px', marginBottom: '24px', color: '#0a0f1f' }}>
@@ -562,9 +550,6 @@ export default function Home() {
             <button style={{ backgroundColor: '#a8c9e8', color: '#0a0f1f', border: 'none', padding: '8px 20px', borderRadius: '20px', cursor: 'pointer', fontSize: '14px', fontWeight: 'bold' }}>
               Forecast
             </button>
-            <button style={{ backgroundColor: 'transparent', color: '#a0aec0', border: '1px solid #1a2540', padding: '8px 20px', borderRadius: '20px', cursor: 'pointer', fontSize: '14px' }}>
-              Air quality
-            </button>
           </div>
 
           {/* 7-Day Forecast Grid (8 columns) */}
@@ -602,44 +587,51 @@ export default function Home() {
           )}
 
           {/* Chance of Rain Chart */}
-          <div style={{ marginTop: '32px', backgroundColor: '#1a2540', borderRadius: '16px', padding: '24px' }}>
-            <div style={{ fontSize: '14px', fontWeight: 'bold', marginBottom: '20px', color: '#ffffff' }}>Chance of rain</div>
-            
-            {/* Bar Chart */}
-            <div style={{ display: 'flex', alignItems: 'flex-end', justifyContent: 'space-around', height: '140px', gap: '6px', marginBottom: '16px' }}>
-              {[65, 45, 85, 30, 70, 50, 40, 55].map((height, idx) => (
-                <div
-                  key={idx}
-                  style={{
-                    backgroundColor: '#4a90e2',
-                    borderRadius: '4px',
-                    flex: 1,
-                    height: `${height}%`,
-                    minHeight: '10px',
-                  }}
-                />
-              ))}
-            </div>
+          {displayedForecast && (
+            <div style={{ marginTop: '32px', backgroundColor: '#1a2540', borderRadius: '16px', padding: '24px' }}>
+              <div style={{ fontSize: '14px', fontWeight: 'bold', marginBottom: '20px', color: '#ffffff' }}>Hourly precipitation</div>
+              
+              {/* Bar Chart - Real Data */}
+              <div style={{ display: 'flex', alignItems: 'flex-end', justifyContent: 'space-around', height: '140px', gap: '6px', marginBottom: '16px' }}>
+                {displayedForecast.list.slice(0, 8).map((item, idx) => {
+                  const cloudCover = item.clouds.all;
+                  const isRainy = item.weather.some(w => ['Rain', 'Drizzle', 'Thunderstorm'].includes(w.main));
+                  const rainChance = isRainy ? Math.min(100, cloudCover + 30) : cloudCover;
+                  return (
+                    <div
+                      key={idx}
+                      style={{
+                        backgroundColor: rainChance > 70 ? '#6ba3ff' : '#4a90e2',
+                        borderRadius: '4px',
+                        flex: 1,
+                        height: `${Math.max(10, rainChance)}%`,
+                        minHeight: '10px',
+                        transition: 'all 0.3s ease',
+                      }}
+                      title={`${rainChance}% chance`}
+                    />
+                  );
+                })}
+              </div>
 
-            {/* Time Labels */}
-            <div style={{ display: 'grid', gridTemplateColumns: 'repeat(8, 1fr)', gap: '4px', fontSize: '9px', color: '#718096', textAlign: 'center' }}>
-              <div>10AM</div>
-              <div>11AM</div>
-              <div>12AM</div>
-              <div>1PM</div>
-              <div>2PM</div>
-              <div>3PM</div>
-              <div>4PM</div>
-              <div>5PM</div>
-            </div>
+              {/* Time Labels */}
+              <div style={{ display: 'grid', gridTemplateColumns: 'repeat(8, 1fr)', gap: '4px', fontSize: '9px', color: '#718096', textAlign: 'center' }}>
+                {displayedForecast.list.slice(0, 8).map((item, idx) => {
+                  const time = new Date(item.dt_txt);
+                  return (
+                    <div key={idx}>
+                      {time.getHours().toString().padStart(2, '0')}:00
+                    </div>
+                  );
+                })}
+              </div>
 
-            {/* Legend */}
-            <div style={{ marginTop: '16px', display: 'flex', gap: '20px', fontSize: '12px', color: '#a0aec0' }}>
-              <div>Rainy</div>
-              <div>Sunny</div>
-              <div>Heavy</div>
+              {/* Legend */}
+              <div style={{ marginTop: '16px', display: 'flex', gap: '20px', fontSize: '12px', color: '#a0aec0' }}>
+                <div>💧 Based on cloud cover & weather</div>
+              </div>
             </div>
-          </div>
+          )}
         </div>
       </div>
 
