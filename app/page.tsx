@@ -504,30 +504,37 @@ export default function Home() {
           {/* Temperature Unit Toggle */}
           <button
             onClick={() => setTempUnit(tempUnit === 0 ? 1 : 0)}
+            title="Toggle Celsius / Fahrenheit"
             style={{
               background: 'none',
-              border: 'none',
-              fontSize: '24px',
+              border: `1px solid ${theme.border}`,
+              borderRadius: '20px',
               cursor: 'pointer',
               display: 'flex',
               alignItems: 'center',
-              justifyContent: 'center',
-              width: '32px',
+              gap: '0',
+              padding: '4px 6px',
               height: '32px',
             }}
-            title="Toggle C/F"
           >
-            <svg viewBox="0 0 24 24" width="24" height="24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" style={{ color: '#ffa500' }}>
-              <circle cx="12" cy="12" r="5"></circle>
-              <line x1="12" y1="1" x2="12" y2="3"></line>
-              <line x1="12" y1="21" x2="12" y2="23"></line>
-              <line x1="4.22" y1="4.22" x2="5.64" y2="5.64"></line>
-              <line x1="18.36" y1="18.36" x2="19.78" y2="19.78"></line>
-              <line x1="1" y1="12" x2="3" y2="12"></line>
-              <line x1="21" y1="12" x2="23" y2="12"></line>
-              <line x1="4.22" y1="19.78" x2="5.64" y2="18.36"></line>
-              <line x1="18.36" y1="5.64" x2="19.78" y2="4.22"></line>
-            </svg>
+            <span style={{
+              fontSize: '13px',
+              fontWeight: 'bold',
+              padding: '2px 8px',
+              borderRadius: '14px',
+              backgroundColor: tempUnit === 0 ? theme.accent : 'transparent',
+              color: tempUnit === 0 ? '#ffffff' : theme.textSecondary,
+              transition: 'all 0.2s ease',
+            }}>°C</span>
+            <span style={{
+              fontSize: '13px',
+              fontWeight: 'bold',
+              padding: '2px 8px',
+              borderRadius: '14px',
+              backgroundColor: tempUnit === 1 ? theme.accent : 'transparent',
+              color: tempUnit === 1 ? '#ffffff' : theme.textSecondary,
+              transition: 'all 0.2s ease',
+            }}>°F</span>
           </button>
 
           {/* Dark/Light Theme Toggle */}
@@ -827,7 +834,7 @@ export default function Home() {
             <div style={{ fontSize: '18px', fontWeight: 'bold', marginBottom: '8px', color: theme.textPrimary }}>
               {geoWeatherData.name}, {geoWeatherData.sys.country}
             </div>
-            <div style={{ fontSize: '32px', fontWeight: 'bold', color: theme.cardBgLight, marginBottom: '8px' }}>
+            <div style={{ fontSize: '32px', fontWeight: 'bold', color: theme.accent, marginBottom: '8px' }}>
               {convertTemperature(geoWeatherData.main.temp).toFixed(0)}°{getTempUnit()}
             </div>
             <div style={{ fontSize: '12px', color: theme.textSecondary }}>
