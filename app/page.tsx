@@ -86,7 +86,44 @@ export default function Home() {
   const [searchLoading, setSearchLoading] = useState(false);
   const [recentSearches, setRecentSearches] = useState<string[]>([]);
   const [showSearchDropdown, setShowSearchDropdown] = useState(false);
+  const [isDarkTheme, setIsDarkTheme] = useState(true);
   const searchInputRef = useRef<HTMLInputElement>(null);
+
+  // Theme colors
+  const theme = isDarkTheme ? {
+    bg: '#0a0f1f',
+    bgSecondary: '#0f1419',
+    cardBg: '#1a2540',
+    cardBgLight: '#a8c9e8',
+    textPrimary: '#ffffff',
+    textSecondary: '#a0aec0',
+    textDark: '#0a0f1f',
+    border: '#2d3748',
+    accent: '#4a90e2',
+  } : {
+    bg: '#f5f7fa',
+    bgSecondary: '#e8ecf1',
+    cardBg: '#ffffff',
+    cardBgLight: '#e8f0fd',
+    textPrimary: '#1a202c',
+    textSecondary: '#4a5568',
+    textDark: '#1a202c',
+    border: '#cbd5e0',
+    accent: '#2563eb',
+  };
+
+  // Load theme from localStorage on mount
+  useEffect(() => {
+    const savedTheme = localStorage.getItem('theme');
+    if (savedTheme !== null) {
+      setIsDarkTheme(JSON.parse(savedTheme));
+    }
+  }, []);
+
+  // Save theme to localStorage when it changes
+  useEffect(() => {
+    localStorage.setItem('theme', JSON.stringify(isDarkTheme));
+  }, [isDarkTheme]);
 
   useEffect(() => {
     navigator.geolocation.getCurrentPosition(async (position) => {
@@ -329,14 +366,14 @@ export default function Home() {
   };
 
   return (
-    <div style={{ backgroundColor: '#0a0f1f', minHeight: '100vh', color: '#ffffff', fontFamily: "'Segoe UI', sans-serif" }}>
+    <div style={{ backgroundColor: theme.bg, minHeight: '100vh', color: theme.textPrimary, fontFamily: "'Segoe UI', sans-serif" }}>
       {/* Top Navigation Bar */}
-      <div style={{ backgroundColor: '#0f1419', padding: '16px 32px', display: 'flex', alignItems: 'center', justifyContent: 'space-between', borderBottom: '1px solid #1a2540' }}>
+      <div style={{ backgroundColor: theme.bgSecondary, padding: '16px 32px', display: 'flex', alignItems: 'center', justifyContent: 'space-between', borderBottom: `1px solid ${theme.border}` }}>
         <div style={{ display: 'flex', alignItems: 'center', gap: '20px' }}>
           {/* Notification Icon */}
           <button style={{ background: 'none', border: 'none', color: '#ff6b6b', fontSize: '16px', cursor: 'pointer' }}>●</button>
           {/* Location - Current Location */}
-          <div style={{ display: 'flex', alignItems: 'center', gap: '8px', color: '#ffffff' }}>
+          <div style={{ display: 'flex', alignItems: 'center', gap: '8px', color: theme.textPrimary }}>
             <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
               <path d="M21 10c0 7-9 13-9 13s-9-6-9-13a9 9 0 0 1 18 0z"></path>
               <circle cx="12" cy="10" r="3"></circle>
@@ -377,10 +414,10 @@ export default function Home() {
             style={{
               width: '100%',
               padding: '10px 16px',
-              backgroundColor: '#1a2540',
-              border: 'none',
+              backgroundColor: theme.cardBg,
+              border: `1px solid ${theme.border}`,
               borderRadius: '20px',
-              color: '#a0aec0',
+              color: theme.textSecondary,
               fontSize: '14px',
               opacity: searchLoading ? 0.6 : 1,
               cursor: searchLoading ? 'not-allowed' : 'text',
@@ -395,8 +432,8 @@ export default function Home() {
                 top: '100%',
                 left: 0,
                 right: 0,
-                backgroundColor: '#1a2540',
-                border: '1px solid #2d3748',
+                backgroundColor: theme.cardBg,
+                border: `1px solid ${theme.border}`,
                 borderRadius: '12px',
                 marginTop: '8px',
                 zIndex: 1000,
@@ -464,18 +501,69 @@ export default function Home() {
 
         {/* Right Icons */}
         <div style={{ display: 'flex', alignItems: 'center', gap: '16px' }}>
-          {/* Theme Toggle */}
+          {/* Temperature Unit Toggle */}
           <button
             onClick={() => setTempUnit(tempUnit === 0 ? 1 : 0)}
             style={{
               background: 'none',
               border: 'none',
-              fontSize: '28px',
+              fontSize: '24px',
               cursor: 'pointer',
+              display: 'flex',
+              alignItems: 'center',
+              justifyContent: 'center',
+              width: '32px',
+              height: '32px',
             }}
+            title="Toggle C/F"
           >
-            ☀️
+            <svg viewBox="0 0 24 24" width="24" height="24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" style={{ color: '#ffa500' }}>
+              <circle cx="12" cy="12" r="5"></circle>
+              <line x1="12" y1="1" x2="12" y2="3"></line>
+              <line x1="12" y1="21" x2="12" y2="23"></line>
+              <line x1="4.22" y1="4.22" x2="5.64" y2="5.64"></line>
+              <line x1="18.36" y1="18.36" x2="19.78" y2="19.78"></line>
+              <line x1="1" y1="12" x2="3" y2="12"></line>
+              <line x1="21" y1="12" x2="23" y2="12"></line>
+              <line x1="4.22" y1="19.78" x2="5.64" y2="18.36"></line>
+              <line x1="18.36" y1="5.64" x2="19.78" y2="4.22"></line>
+            </svg>
           </button>
+
+          {/* Dark/Light Theme Toggle */}
+          <button
+            onClick={() => setIsDarkTheme(!isDarkTheme)}
+            style={{
+              background: 'none',
+              border: 'none',
+              cursor: 'pointer',
+              display: 'flex',
+              alignItems: 'center',
+              justifyContent: 'center',
+              width: '32px',
+              height: '32px',
+            }}
+            title="Toggle theme"
+          >
+            {isDarkTheme ? (
+              <svg viewBox="0 0 24 24" width="24" height="24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" style={{ color: '#ffd700' }}>
+                <path d="M21 12.79A9 9 0 1 1 11.21 3 7 7 0 0 0 21 12.79z"></path>
+              </svg>
+            ) : (
+              <svg viewBox="0 0 24 24" width="24" height="24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" style={{ color: '#ffa500' }}>
+                <circle cx="12" cy="12" r="5"></circle>
+                <line x1="12" y1="1" x2="12" y2="3"></line>
+                <line x1="12" y1="21" x2="12" y2="23"></line>
+                <line x1="4.22" y1="4.22" x2="5.64" y2="5.64"></line>
+                <line x1="18.36" y1="18.36" x2="19.78" y2="19.78"></line>
+                <line x1="1" y1="12" x2="3" y2="12"></line>
+                <line x1="21" y1="12" x2="23" y2="12"></line>
+                <line x1="4.22" y1="19.78" x2="5.64" y2="18.36"></line>
+                <line x1="18.36" y1="5.64" x2="19.78" y2="4.22"></line>
+              </svg>
+            )}
+          </button>
+
           {/* Profile */}
           <div style={{ width: '40px', height: '40px', borderRadius: '50%', backgroundColor: '#c48a62', display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: '18px', cursor: 'pointer' }}>👤</div>
         </div>
@@ -487,22 +575,22 @@ export default function Home() {
         <div style={{ flex: '0 0 320px' }}>
           {/* Main Weather Card with Light Background */}
           {displayedWeather && (expandedGeoCard || displayedWeather.name !== geoWeatherData?.name) && (
-            <div style={{ backgroundColor: '#a8c9e8', borderRadius: '20px', padding: '24px', marginBottom: '24px', color: '#0a0f1f' }}>
+            <div style={{ backgroundColor: theme.cardBgLight, borderRadius: '20px', padding: '24px', marginBottom: '24px', color: theme.textDark }}>
               {/* Location and Time */}
               <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '20px' }}>
                 <div>
-                  <div style={{ fontSize: '18px', fontWeight: 'bold', color: '#0a0f1f' }}>
+                  <div style={{ fontSize: '18px', fontWeight: 'bold', color: theme.textDark }}>
                     {displayedWeather?.name || 'Location'}
                   </div>
                 </div>
-                <div style={{ fontSize: '14px', color: '#0a0f1f' }}>
+                <div style={{ fontSize: '14px', color: theme.textDark }}>
                   {new Date().toLocaleTimeString('en-US', { hour: '2-digit', minute: '2-digit' })}
                 </div>
               </div>
 
               {/* Large Temperature and Icon */}
               <div style={{ display: 'flex', alignItems: 'flex-start', gap: '12px', marginBottom: '20px' }}>
-                <div style={{ fontSize: '64px', fontWeight: 'bold', lineHeight: '1', color: '#0a0f1f' }}>
+                <div style={{ fontSize: '64px', fontWeight: 'bold', lineHeight: '1', color: theme.textDark }}>
                   {convertTemperature(displayedWeather.main.temp).toFixed(0)}°{getTempUnit()}
                 </div>
                 <img
@@ -515,40 +603,40 @@ export default function Home() {
               {/* Weather Details */}
               <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '16px', fontSize: '13px' }}>
                 <div>
-                  <div style={{ color: '#0a0f1f', fontSize: '11px', marginBottom: '4px' }}>Real Feel</div>
-                  <div style={{ fontWeight: 'bold', fontSize: '16px', color: '#0a0f1f' }}>
+                  <div style={{ color: theme.textDark, fontSize: '11px', marginBottom: '4px' }}>Real Feel</div>
+                  <div style={{ fontWeight: 'bold', fontSize: '16px', color: theme.textDark }}>
                     {convertTemperature(displayedWeather.main.feels_like).toFixed(0)}°{getTempUnit()}
                   </div>
                 </div>
                 <div>
-                  <div style={{ color: '#0a0f1f', fontSize: '11px', marginBottom: '4px' }}>Wind</div>
-                  <div style={{ fontWeight: 'bold', fontSize: '16px', color: '#0a0f1f' }}>
+                  <div style={{ color: theme.textDark, fontSize: '11px', marginBottom: '4px' }}>Wind</div>
+                  <div style={{ fontWeight: 'bold', fontSize: '16px', color: theme.textDark }}>
                     {displayedWeather.wind.speed} m/s
                   </div>
                 </div>
                 <div>
-                  <div style={{ color: '#0a0f1f', fontSize: '11px', marginBottom: '4px' }}>Pressure</div>
-                  <div style={{ fontWeight: 'bold', fontSize: '16px', color: '#0a0f1f' }}>
+                  <div style={{ color: theme.textDark, fontSize: '11px', marginBottom: '4px' }}>Pressure</div>
+                  <div style={{ fontWeight: 'bold', fontSize: '16px', color: theme.textDark }}>
                     {displayedWeather.main.pressure}MB
                   </div>
                 </div>
                 <div>
-                  <div style={{ color: '#0a0f1f', fontSize: '11px', marginBottom: '4px' }}>Humidity</div>
-                  <div style={{ fontWeight: 'bold', fontSize: '16px', color: '#0a0f1f' }}>
+                  <div style={{ color: theme.textDark, fontSize: '11px', marginBottom: '4px' }}>Humidity</div>
+                  <div style={{ fontWeight: 'bold', fontSize: '16px', color: theme.textDark }}>
                     {displayedWeather.main.humidity}%
                   </div>
                 </div>
               </div>
 
               {/* Sunrise/Sunset */}
-              <div style={{ marginTop: '16px', paddingTop: '16px', borderTop: '1px solid rgba(0,0,0,0.1)', display: 'flex', justifyContent: 'space-around', fontSize: '12px' }}>
+              <div style={{ marginTop: '16px', paddingTop: '16px', borderTop: `1px solid ${theme.textDark}33`, display: 'flex', justifyContent: 'space-around', fontSize: '12px' }}>
                 <div>
-                  <div style={{ color: '#0a0f1f', marginBottom: '4px' }}>Sunrise</div>
-                  <div style={{ fontWeight: 'bold', color: '#0a0f1f' }}>{formatSunriseSetTime(displayedWeather.sys.sunrise)}</div>
+                  <div style={{ color: theme.textDark, marginBottom: '4px' }}>Sunrise</div>
+                  <div style={{ fontWeight: 'bold', color: theme.textDark }}>{formatSunriseSetTime(displayedWeather.sys.sunrise)}</div>
                 </div>
                 <div>
-                  <div style={{ color: '#0a0f1f', marginBottom: '4px' }}>Sunset</div>
-                  <div style={{ fontWeight: 'bold', color: '#0a0f1f' }}>{formatSunriseSetTime(displayedWeather.sys.sunset)}</div>
+                  <div style={{ color: theme.textDark, marginBottom: '4px' }}>Sunset</div>
+                  <div style={{ fontWeight: 'bold', color: theme.textDark }}>{formatSunriseSetTime(displayedWeather.sys.sunset)}</div>
                 </div>
               </div>
             </div>
@@ -559,7 +647,7 @@ export default function Home() {
         <div style={{ flex: 1 }}>
           {/* Forecast Buttons */}
           <div style={{ display: 'flex', gap: '12px', marginBottom: '20px', justifyContent: 'flex-end' }}>
-            <button style={{ backgroundColor: '#a8c9e8', color: '#0a0f1f', border: 'none', padding: '8px 20px', borderRadius: '20px', cursor: 'pointer', fontSize: '14px', fontWeight: 'bold' }}>
+            <button style={{ backgroundColor: theme.cardBgLight, color: theme.textDark, border: 'none', padding: '8px 20px', borderRadius: '20px', cursor: 'pointer', fontSize: '14px', fontWeight: 'bold' }}>
               Forecast
             </button>
           </div>
@@ -574,14 +662,14 @@ export default function Home() {
                   <div
                     key={index}
                     style={{
-                      backgroundColor: '#1a2540',
+                      backgroundColor: theme.cardBg,
                       borderRadius: '12px',
                       padding: '12px',
                       textAlign: 'center',
-                      border: index === 0 ? '2px solid #a8c9e8' : 'none',
+                      border: index === 0 ? `2px solid ${theme.cardBgLight}` : `1px solid ${theme.border}`,
                     }}
                   >
-                    <div style={{ fontSize: '11px', color: '#a0aec0', marginBottom: '6px', fontWeight: index === 0 ? 'bold' : 'normal' }}>
+                    <div style={{ fontSize: '11px', color: theme.textSecondary, marginBottom: '6px', fontWeight: index === 0 ? 'bold' : 'normal' }}>
                       {dayName}
                     </div>
                     <div style={{ fontSize: '14px', fontWeight: 'bold', marginBottom: '4px' }}>
@@ -595,8 +683,8 @@ export default function Home() {
 
           {/* Chance of Rain Chart */}
           {displayedForecast && (
-            <div style={{ marginTop: '32px', backgroundColor: '#1a2540', borderRadius: '16px', padding: '24px' }}>
-              <div style={{ fontSize: '14px', fontWeight: 'bold', marginBottom: '24px', color: '#ffffff' }}>Hourly precipitation</div>
+            <div style={{ marginTop: '32px', backgroundColor: theme.cardBg, borderRadius: '16px', padding: '24px' }}>
+              <div style={{ fontSize: '14px', fontWeight: 'bold', marginBottom: '24px', color: theme.textPrimary }}>Hourly precipitation</div>
               
               {/* Professional Line Chart */}
               <div style={{ position: 'relative', height: '200px', marginBottom: '24px' }}>
@@ -724,25 +812,25 @@ export default function Home() {
           <div
             onClick={handleGeoCardClick}
             style={{
-              backgroundColor: '#1a2540',
+              backgroundColor: theme.cardBg,
               borderRadius: '16px',
               padding: '24px',
               cursor: 'pointer',
-              border: expandedGeoCard ? '2px solid #a8c9e8' : '1px solid #1a2540',
+              border: expandedGeoCard ? `2px solid ${theme.cardBgLight}` : `1px solid ${theme.border}`,
               transition: 'all 0.3s ease',
               maxWidth: '300px',
             }}
           >
-            <div style={{ fontSize: '12px', fontWeight: 'bold', marginBottom: '8px', color: '#a0aec0' }}>
+            <div style={{ fontSize: '12px', fontWeight: 'bold', marginBottom: '8px', color: theme.textSecondary }}>
               Your Location
             </div>
-            <div style={{ fontSize: '18px', fontWeight: 'bold', marginBottom: '8px', color: '#ffffff' }}>
+            <div style={{ fontSize: '18px', fontWeight: 'bold', marginBottom: '8px', color: theme.textPrimary }}>
               {geoWeatherData.name}, {geoWeatherData.sys.country}
             </div>
-            <div style={{ fontSize: '32px', fontWeight: 'bold', color: '#a8c9e8', marginBottom: '8px' }}>
+            <div style={{ fontSize: '32px', fontWeight: 'bold', color: theme.cardBgLight, marginBottom: '8px' }}>
               {convertTemperature(geoWeatherData.main.temp).toFixed(0)}°{getTempUnit()}
             </div>
-            <div style={{ fontSize: '12px', color: '#718096' }}>
+            <div style={{ fontSize: '12px', color: theme.textSecondary }}>
               {expandedGeoCard ? 'Click to collapse' : 'Click to expand'}
             </div>
           </div>
