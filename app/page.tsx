@@ -220,7 +220,7 @@ export default function Home() {
   };
 
   const getTempUnit = (): string => {
-    return tempUnit === 0 ? '°C' : '°F';
+    return tempUnit === 0 ? 'C' : 'F';
   };
 
   // Add search to history (max 3) with API response
