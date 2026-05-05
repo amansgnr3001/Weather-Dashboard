@@ -2,7 +2,7 @@
 
 A responsive weather forecasting dashboard built with **Next.js 16**, **React 19**, and **TypeScript**. Search any city to get real-time weather data and a 5-day forecast powered by the OpenWeatherMap API.
 
-🌍 **Live Demo:** [View on Vercel](https://weather-forcasting-pmrjlcrch-amansgnr3001s-projects.vercel.app/)
+🌍 **Live Demo:** [View on Vercel](https://weather-forcasting-pi.vercel.app/)
 
 ---
 
