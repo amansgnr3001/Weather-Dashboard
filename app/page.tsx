@@ -84,6 +84,7 @@ export default function Home() {
   const [tempUnit, setTempUnit] = useState(0); // 0 = Celsius, 1 = Fahrenheit
   const [searchInput, setSearchInput] = useState('');
   const [searchLoading, setSearchLoading] = useState(false);
+  const [recentSearches, setRecentSearches] = useState<string[]>([]);
 
   useEffect(() => {
     navigator.geolocation.getCurrentPosition(async (position) => {
@@ -126,6 +127,45 @@ export default function Home() {
     });
   }, []);
 
+  // Load recent searches from localStorage on mount
+  useEffect(() => {
+    const stored = localStorage.getItem('recentSearches');
+    if (stored) {
+      try {
+        setRecentSearches(JSON.parse(stored));
+      } catch (err) {
+        console.error('Error parsing recentSearches from localStorage:', err);
+      }
+    }
+  }, []);
+
+  // Clear cache every hour (weather remains constant for ~1 hour)
+  useEffect(() => {
+    const clearCacheInterval = setInterval(() => {
+      console.log('Clearing weather cache...');
+      
+      const stored = localStorage.getItem('recentSearches');
+      if (stored) {
+        try {
+          const searches = JSON.parse(stored) as string[];
+          searches.forEach((location) => {
+            localStorage.removeItem(location);
+            console.log(`Deleted cache for: ${location}`);
+          });
+          localStorage.removeItem('recentSearches');
+          setRecentSearches([]);
+          console.log('All weather cache cleared!');
+        } catch (err) {
+          console.error('Error clearing cache:', err);
+        }
+      }
+    }, 3600000); // 1 hour = 3600000 ms
+
+    return () => {
+      clearInterval(clearCacheInterval);
+    };
+  }, []);
+
   const getWeatherIcon = (iconCode: string) => {
     return `https://openweathermap.org/img/wn/${iconCode}@2x.png`;
   };
@@ -161,21 +201,78 @@ export default function Home() {
     return tempUnit === 0 ? '°C' : '°F';
   };
 
+  // Add search to history (max 3) with API response
+  const addToSearchHistory = (location: string, weatherData: WeatherData, forecastData: ForecastData) => {
+    setRecentSearches((prevSearches) => {
+      let updated = [...prevSearches];
+      
+      // Remove if already exists (to avoid duplicates)
+      updated = updated.filter((search) => search !== location);
+      
+      // Add new search at the beginning
+      updated.unshift(location);
+      
+      // Keep only last 3
+      let removedLocation: string | null = null;
+      if (updated.length > 3) {
+        removedLocation = updated.pop() || null;
+      }
+      
+      // Remove old location from localStorage if it exceeded the limit
+      if (removedLocation) {
+        localStorage.removeItem(removedLocation);
+      }
+      
+      // Store the API response with location as key
+      const apiResponse = {
+        weather: weatherData,
+        forecast: forecastData,
+      };
+      localStorage.setItem(location, JSON.stringify(apiResponse));
+      
+      // Save to localStorage
+      localStorage.setItem('recentSearches', JSON.stringify(updated));
+      
+      return updated;
+    });
+  };
+
   const handleSearch = async (city: string) => {
     if (!city.trim()) return;
     
     setSearchLoading(true);
+    setSearchInput('');
+    
     try {
+      const trimmedCity = city.trim();
       const apiKey = process.env.NEXT_PUBLIC_WEATHER_API_KEY;
+      
       if (!apiKey) {
         throw new Error('API key not found');
       }
 
+      // Check if location is in recent searches - load from localStorage cache
+      if (recentSearches.includes(trimmedCity)) {
+        console.log('Found in recent searches, loading from localStorage:', trimmedCity);
+        
+        const cachedData = localStorage.getItem(trimmedCity);
+        if (cachedData) {
+          const { weather, forecast } = JSON.parse(cachedData);
+          setDisplayedWeather(weather);
+          setDisplayedForecast(forecast);
+          setExpandedGeoCard(false);
+          console.log('Loaded from cache');
+          setSearchLoading(false);
+          return;
+        }
+      }
+
+      // Not in cache, make API request
       const weatherRes = await fetch(
-        `https://api.openweathermap.org/data/2.5/weather?q=${city}&appid=${apiKey}&units=metric`
+        `https://api.openweathermap.org/data/2.5/weather?q=${trimmedCity}&appid=${apiKey}&units=metric`
       );
       const forecastRes = await fetch(
-        `https://api.openweathermap.org/data/2.5/forecast?q=${city}&appid=${apiKey}&units=metric`
+        `https://api.openweathermap.org/data/2.5/forecast?q=${trimmedCity}&appid=${apiKey}&units=metric`
       );
 
       if (!weatherRes.ok || !forecastRes.ok) {
@@ -185,10 +282,12 @@ export default function Home() {
       const weather = await weatherRes.json();
       const forecast = await forecastRes.json();
 
+      // Add to search history and cache
+      addToSearchHistory(weather.name, weather, forecast);
+      
       setDisplayedWeather(weather);
       setDisplayedForecast(forecast);
       setExpandedGeoCard(false);
-      setSearchInput('');
     } catch (err) {
       console.error('Search error:', err);
       alert('Could not find weather for that location');
